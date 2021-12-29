@@ -16,7 +16,7 @@ def main():
     manager = db_manager()
 
     df = pd.read_csv('SandPhedge.csv')
-    spot = df['Spot']
+    spot = df['Spot'].values
     
 
     df['RSpot'] = Quant.compounded_returns(spot)
