@@ -31,3 +31,9 @@ def standard_deviation(values):
 
 def kurtosis(values):
     return st.kurtosis(values, bias=False)
+
+def simple_stats(values, index):
+        return pd.DataFrame(data={'mean': np.mean(values), 
+                                'std': quant.standard_deviation(values), 
+                                'skew': quant.skewness(values),
+                                'kurt': quant.kurtosis(values)}, index=[index]) 
