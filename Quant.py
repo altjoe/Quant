@@ -37,3 +37,19 @@ def simple_stats(values, index):
                                 'std': standard_deviation(values), 
                                 'skew': skewness(values),
                                 'kurt': kurtosis(values)}, index=[index]) 
+    
+def covariance(X, Y):
+    xmean = np.mean(X)
+    ymean = np.mean(Y)
+
+    summation = np.sum([(x - xmean)*(y - ymean) for x, y in zip(X, Y)])
+    return summation / (float(len(X)) - 1.0)
+    #sum((xi - x(-))*(yi - y(-)))/(N - 1)
+
+def correlation(X, Y):
+    xstd = standard_deviation(X)
+    ystd = standard_deviation(Y)
+    return covariance(X, Y) / (xstd * ystd)
+
+def spearman_rank_correlation(X, Y):
+    st.spearmanr(X, Y)
