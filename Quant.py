@@ -41,10 +41,8 @@ def simple_stats(values, index):
 def covariance(X, Y):
     xmean = np.mean(X)
     ymean = np.mean(Y)
-
     summation = np.sum([(x - xmean)*(y - ymean) for x, y in zip(X, Y)])
     return summation / (float(len(X)) - 1.0)
-    #sum((xi - x(-))*(yi - y(-)))/(N - 1)
 
 def correlation(X, Y):
     xstd = standard_deviation(X)
@@ -52,4 +50,12 @@ def correlation(X, Y):
     return covariance(X, Y) / (xstd * ystd)
 
 def spearman_rank_correlation(X, Y):
-    st.spearmanr(X, Y)
+    return st.spearmanr(X, Y).correlation
+    
+def spearman_rank_correlation(X, Y):
+    xrank = len(X) - st.rankdata(X) 
+    yrank = len(Y) - st.rankdata(Y)
+    return correlation(xrank, yrank)
+    # print(yrank, Y)
+    
+    
