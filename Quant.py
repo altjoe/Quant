@@ -56,6 +56,18 @@ def spearman_rank_correlation(X, Y):
     xrank = len(X) - st.rankdata(X) 
     yrank = len(Y) - st.rankdata(Y)
     return correlation(xrank, yrank)
-    # print(yrank, Y)
-    
+
+def portfolio_returns(returns, weights):
+        return returns.mul(weights).sum(1, skipna=False)
+
+def covariance_matrix(returns):
+        returns = returns.dropna()
+        mean = list(returns.mean())
+        deviation = returns.sub(mean)
+        tensor = deviation.to_numpy()
+        return np.dot(np.transpose(tensor), tensor) / (len(returns) - 1)
+
+def portfolio_variance(returns, weights):
+    covariance = covariance_matrix(returns)
+    return np.dot(np.dot(np.transpose(weights), covariance), weights)
     
