@@ -1,4 +1,7 @@
 from os import stat
+from numpy import NaN, random
+from numpy.lib.function_base import cov
+from scipy.optimize.moduleTNC import minimize
 from sshtunnel import SSHTunnelForwarder
 from db_manager import db_manager
 from sklearn.linear_model import LinearRegression
@@ -15,32 +18,27 @@ SSH_PASSWORD = 'f3N03rll:)'
 REMOTE_BIND_ADDR = ('localhost', 5432)
 LOCAL_BIND_ADDR = REMOTE_BIND_ADDR
 pd.set_option('display.max_columns', None)
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+
+
 def main():
-    df = pd.read_csv('2-8-1-Excersize.csv')
-    df['FORDRET'] = quant.simple_returns(df['FORD'].values)
-    df['GERET'] = quant.simple_returns(df['GE'].values)
-    df['MSOFTRET'] = quant.simple_returns(df['MICROSOFT'].values)
+    stock = np.asanyarray([17.8, 39.0, 12.8, 24.2, 17.2])
+    index = np.asanyarray([13.7, 23.2, 6.9, 16.8, 12.3])
+
+    from sklearn.linear_model import LinearRegression
+    import plotly.express as px
+
+    def get_a_and_b_linear_regression(X, y):
+        reg = LinearRegression().fit(index.reshape(-1, 1), stock)
+        print(reg.score(index.reshape(-1, 1), stock))
+        return {'a': reg.intercept_, 'b': reg.coef_}
+
+    print(get_a_and_b_linear_regression(index, stock))
+
+    # fig = px.scatter(x=index, y=stock)
+    # fig.show()
     
-    return_columns = ['FORDRET', 'GERET', 'MSOFTRET']
-    weights = np.asanyarray([0.33, 0.33, 0.34])
-    average_returns = np.asanyarray(df[return_columns].mean())
-    df['PORTRET'] = quant.portfolio_returns(df[return_columns], weights)
 
-    
-    covariance = quant.covariance_matrix(df[return_columns])
-    print(covariance)
-    print(f'Average Returns: {average_returns}')
-
-    def portfolio_mean(weights, returns):
-        return np.sum(np.asanyarray(returns.mean()) * weights)
-
-    print(portfolio_mean(weights, df[return_columns]))
-    variance = np.dot(np.dot(np.transpose(weights), covariance), weights)
-    print(variance)
-    #pg 137
-    # print(df)
-
-    
 
 # with SSHTunnelForwarder((REMOTE_HOST, REMOTE_SSH_PORT), ssh_username=SSH_USERNAME, ssh_password=SSH_PASSWORD,
 #                             remote_bind_address=REMOTE_BIND_ADDR, local_bind_address=LOCAL_BIND_ADDR):
