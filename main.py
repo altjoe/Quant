@@ -1,4 +1,5 @@
 from os import stat
+from random import sample
 from numpy import NaN, random
 from numpy.lib.function_base import cov
 from scipy.optimize.moduleTNC import minimize
@@ -10,6 +11,7 @@ import numpy as np
 import Quant as quant
 import scipy.stats as st
 import plotly.express as px
+from db_manager import db_manager
 
 REMOTE_HOST = 'mi3-ss64.a2hosting.com'
 REMOTE_SSH_PORT = 7822
@@ -22,24 +24,61 @@ pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 
 def main():
-    stock = np.asanyarray([17.8, 39.0, 12.8, 24.2, 17.2])
-    index = np.asanyarray([13.7, 23.2, 6.9, 16.8, 12.3])
+    manager = db_manager()
 
-    from sklearn.linear_model import LinearRegression
-    import plotly.express as px
+    df = manager.select_df('select * from (select * from ethusd_15_model1 order by d_sec desc limit 5000 offset 0) as top order by d_sec asc')
+    df['returns'] = quant.compounded_returns(df['c'].values)
+    df['ret_predict'] = df['returns'].shift(-1)
+    df['3ret_predict'] = df['returns'].shift(-5).rolling(5, min_periods=1).sum()
+    
+    print(df.head())
+    # print(df.head(5))
 
-    def get_a_and_b_linear_regression(X, y):
-        reg = LinearRegression().fit(index.reshape(-1, 1), stock)
-        print(reg.score(index.reshape(-1, 1), stock))
-        return {'a': reg.intercept_, 'b': reg.coef_}
+    import matplotlib.pyplot as plt
+    df = df.dropna()
+    # print(quant.covariance(df['rsi3'], df['ret_predict']))
 
-    print(get_a_and_b_linear_regression(index, stock))
+    sample_size = 48 * 4
+
+    highest_corr = 0
+    best_df = pd.DataFrame()
+    index_arr = []
+    corr_arr = []
+    for i in range(4000):
+        mask = (df.index >= i) & (df.index < i + sample_size)
+        masked_df = df[mask]
+        columns = ['rsi3', 'rsi4', 'rsi5', 'rsi6', 'rsi7', 'rsi8', 'rsi9']#, 'macd_26_12_9', 'bb_20']
+
+        # avg_corr = 0
+        # for col in columns:
+        #     avg_corr += quant.correlation(masked_df[col], masked_df['3ret_predict'])
+        # avg_corr /= len(columns)
+
+        corr_arr.append(quant.correlation(masked_df['rsi9'], masked_df['3ret_predict']))
+        index_arr.append(i)
+
+    # print(highest_corr)
+
+    # columns = ['rsi3', 'rsi4', 'rsi5', 'rsi6', 'rsi7', 'rsi8', 'rsi9']#, 'macd_26_12_9', 'bb_20']
+    # for col in columns:
+    #     corr = abs(quant.correlation(best_df[col], best_df['3ret_predict']))
+    #     print(f'{col}: {corr}')
+
+
+    plt.plot(index_arr, corr_arr)
+    # plt.scatter(best_df['rsi9'], best_df['3ret_predict'])
+    plt.show()
+    # print(df)
+
+
+    manager.close()
+
 
     # fig = px.scatter(x=index, y=stock)
     # fig.show()
     
 
 
-# with SSHTunnelForwarder((REMOTE_HOST, REMOTE_SSH_PORT), ssh_username=SSH_USERNAME, ssh_password=SSH_PASSWORD,
-#                             remote_bind_address=REMOTE_BIND_ADDR, local_bind_address=LOCAL_BIND_ADDR):
-main() 
+with SSHTunnelForwarder((REMOTE_HOST, REMOTE_SSH_PORT), ssh_username=SSH_USERNAME, ssh_password=SSH_PASSWORD,
+                            remote_bind_address=REMOTE_BIND_ADDR, local_bind_address=LOCAL_BIND_ADDR):
+    main() 
