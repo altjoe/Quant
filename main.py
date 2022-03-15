@@ -1,15 +1,11 @@
 from os import stat
 from random import sample
-from numpy import NaN, random
-from numpy.lib.function_base import cov
-from scipy.optimize.moduleTNC import minimize
 from sshtunnel import SSHTunnelForwarder
 from db_manager import db_manager
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 import numpy as np
 import Quant as quant
-import scipy.stats as st
 import plotly.express as px
 from db_manager import db_manager
 
